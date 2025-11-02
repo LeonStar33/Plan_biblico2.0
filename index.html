@@ -4,21 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Plan de Lectura</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="plan">
     <header>
       <h1>📖 Plan de Lectura</h1>
       <p>Proverbios ⇄ Salmos → Génesis (1 vez) → Nuevo Testamento hasta Apocalipsis</p>
-
+ 
       <div class="acciones">
+          <button id="btn-login">Iniciar sesión con Google</button>
+          <button id="btn-logout" class="oculto">Cerrar sesión</button>
+          <p id="user-email"></p>
+          
         <button onclick="irUltimoDia()">➡ Ir a mi día actual</button>
         <button onclick="exportarProgreso()">💾 Exportar</button>
         <label class="importar">
           📂 Importar
           <input type="file" accept=".json" onchange="importarProgreso(event)" />
-        </label>
+        </label>        
+
+        
+
       </div>
     </header>
 
@@ -28,12 +35,17 @@
   </div>
 
   <div id="lector" class="oculto">
+             
+
     <div class="topbar">
       <button class="volver-btn" id="btn-volver" onclick="cerrarVerso()">⬅ Volver al plan de lectura</button>
       <h2 id="titulo-verso"></h2>
     </div>
     <div id="texto-verso"></div>
   </div>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
   <script src="app.js"></script>
 </body>
