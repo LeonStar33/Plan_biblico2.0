@@ -18,7 +18,10 @@ body{
 }
 
 header{
-  position:sticky; top:0; z-index:10;
+  position:static; top:0;
+  width: 100%;
+  
+  z-index: 1000;
   background:var(--verde);
   color:#222;
   text-align:center;
@@ -101,6 +104,6 @@ h3{ margin:14px 4px 8px; }
 .dia.destacado{ outline:2px solid var(--verde); outline-offset:4px; }
 
 .small{ font-size:12px; opacity:.8; }
-label.reading { display:flex; align-items:center; gap:8px; }
-label.reading button.leer { margin-left:auto; background:transparent; border:1px solid #444; padding:6px 8px; border-radius:6px; color:#fff; }
+label.reading { display:flex; align-items:center; gap:8px;background-color: transparent; }
+label.reading button.leer { margin-left:auto; background:transparent; border:1px solid #444; padding:8px 8px; border-radius:6px; color:#fff; }
 label.reading button.leer:hover { background:#222; }
