@@ -7,15 +7,7 @@ const API_BASE = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/${VERSION}/
 
 // app.js (al inicio)
 
-// PEGA TU CONFIGURACIÓN DE FIREBASE (del Paso 1)
-const firebaseConfig = {
-  apiKey: "AIzaSyCIk0GAQoBaLjNijBgCK-gRZRQDNkULy2g",
-    authDomain: "biblia-para-principiantes.firebaseapp.com",
-    projectId: "biblia-para-principiantes",
-    storageBucket: "biblia-para-principiantes.firebasestorage.app",
-    messagingSenderId: "262001109489",
-    appId: "1:262001109489:web:4b968123c5a291e9267c50"
-};
+
 
 // Inicializar Firebase (¡ESTA ES LA ÚNICA VEZ QUE DEBE APARECER!)
 firebase.initializeApp(firebaseConfig);
