@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
+
+:root{
+  --verde:#ccff00;
+  --gris:#333;
+  --gris2:#555;
+  --bg:#111;
+  --fg:#fff;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Merriweather',serif;
+  background:var(--bg);
+  color:var(--fg);
+  line-height:1.6;
+}
+
+header{
+  position:sticky; top:0; z-index:10;
+  background:var(--verde);
+  color:#222;
+  text-align:center;
+  padding:16px 12px;
+}
+header h1{ margin:0 0 6px; font-size:28px; }
+header p{ margin:0 0 10px; font-size:14px; }
+
+.acciones{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+  margin-top:10px;
+}
+.acciones button, .acciones label{
+  display:block; width:100%;
+  background:var(--gris);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  text-align:center;
+}
+.acciones button:hover, .acciones label:hover{ background:var(--gris2); }
+.importar input{ display:none; }
+
+main{ padding:12px; }
+
+button.dia-btn{
+  display:block; width:100%;
+  background:var(--gris);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  text-align:left;
+  margin:6px 0;
+}
+button.dia-btn:hover{ background:var(--gris2); }
+
+h3{ margin:14px 4px 8px; }
+
+.cargando{ opacity:.8; padding:20px; }
+
+#lector{
+  position:fixed; inset:0; background:var(--bg);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+#lector.oculto{ display:none; }
+#lector .topbar{
+  position:sticky; top:0;
+  background:var(--bg);
+  border-bottom:1px solid #222;
+  padding:12px 16px;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+#titulo-verso{ margin:0; font-size:18px; }
+
+#texto-verso{ padding:16px; }
+#texto-verso p{ margin:8px 0; text-align:justify; line-height:1.7; }
+#texto-verso b{ color:var(--verde); }
+
+.volver-btn{
+  background: var(--verde);
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.dia.destacado{ outline:2px solid var(--verde); outline-offset:4px; }
+
+.small{ font-size:12px; opacity:.8; }
+label.reading { display:flex; align-items:center; gap:8px; }
+label.reading button.leer { margin-left:auto; background:transparent; border:1px solid #444; padding:6px 8px; border-radius:6px; color:#fff; }
+label.reading button.leer:hover { background:#222; }
