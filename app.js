@@ -147,25 +147,41 @@ function capitalizar(str) {
 
 // Generar plan básico (Proverbios + Génesis, luego Salmos + NT)
 function generarPlanLectura() {
-  const proLen = chapterCounts["proverbios"];
-  const psaLen = chapterCounts["salmos"];
-  const genLen = chapterCounts["génesis"];
+  const proLen = chapterCounts["proverbios"]; // 31
+  const psaLen = chapterCounts["salmos"];     // 150
+  const genLen = chapterCounts["génesis"];    // 50
+
   const ntBooks = [
     "mateo", "marcos", "lucas", "juan", "hechos", "romanos",
-    "1corintios", "2corintios", "gálatas", "efesios", "filipenses",
+    "1corintios", "2corintios", "galatas", "efesios", "filipenses",
     "colosenses", "1tesalonicenses", "2tesalonicenses", "1timoteo",
-    "2timoteo", "tito", "filemón", "hebreos", "santiago",
+    "2timoteo", "tito", "filemon", "hebreos", "santiago",
     "1pedro", "2pedro", "1juan", "2juan", "3juan", "judas", "apocalipsis"
   ];
 
   let plan = [];
-  let dia = 1, pro = 1, psa = 1, gen = 1;
-  let ntIndex = 0, ntCap = 1;
+  let dia = 1;
+
+  // contadores
+  let pro = 1;
+  let psa = 1;
+  let gen = 1;
+
+  // NT
+  let ntIndex = 0;
+  let ntCap = 1;
+
+  // fase
   let fase = 1;
+
+  // libro de sabiduría actual en fase 3
+  // (lo decidimos al terminar Génesis según en qué íbamos)
+  let wisdomBook = "proverbios"; // se ajusta al entrar a fase 3
 
   while (true) {
     let lecturas = [];
 
+    // --- FASE 1: Proverbios + Génesis, hasta acabar Proverbios ---
     if (fase === 1) {
       if (pro <= proLen && gen <= genLen) {
         lecturas.push({ libro: "proverbios", cap: pro });
@@ -175,42 +191,70 @@ function generarPlanLectura() {
         fase = 2;
         continue;
       }
-    } else if (fase === 2) {
+    }
+
+    // --- FASE 2: Salmos + Génesis, hasta acabar Génesis ---
+    else if (fase === 2) {
       if (gen <= genLen) {
+        // seguimos salmos desde donde toque
+        if (psa > psaLen) psa = 1;
         lecturas.push({ libro: "salmos", cap: psa });
         lecturas.push({ libro: "génesis", cap: gen });
         psa++; gen++;
       } else {
+        // Génesis terminó -> arrancamos fase 3
         fase = 3;
-        ntIndex = 0;
-        ntCap = 1;
+
+        // si venimos leyendo Salmos y nos quedamos en psa=20 por ejemplo, seguimos con ese
+        wisdomBook = "salmos";
         continue;
       }
-    } else {
-      // NT
+    }
+
+    // --- FASE 3: (Proverbios ↔ Salmos) + NT hasta Apocalipsis ---
+    else if (fase === 3) {
       if (ntIndex >= ntBooks.length) break;
-      if (pro > proLen) { pro = 1; }
-      lecturas.push({ libro: "proverbios", cap: pro });
-      pro++;
+
+      // 1) lectura de sabiduría según el libro actual
+      if (wisdomBook === "salmos") {
+        if (psa > psaLen) { psa = 1; wisdomBook = "proverbios"; }
+      } else {
+        if (pro > proLen) { pro = 1; wisdomBook = "salmos"; }
+      }
+
+      if (wisdomBook === "salmos") {
+        lecturas.push({ libro: "salmos", cap: psa });
+        psa++;
+      } else {
+        lecturas.push({ libro: "proverbios", cap: pro });
+        pro++;
+      }
+
+      // 2) lectura del NT
       lecturas.push({ libro: ntBooks[ntIndex], cap: ntCap });
+
       ntCap++;
-      if (ntCap > (chapterCounts[ntBooks[ntIndex]] || 1)) {
-        ntIndex++; ntCap = 1;
+      const ntLen = chapterCounts[ntBooks[ntIndex]] || 1;
+      if (ntCap > ntLen) {
+        ntIndex++;
+        ntCap = 1;
       }
     }
 
     plan.push({ dia, lecturas });
     dia++;
-    if (dia > 4000) break;
+
+    // seguridad
+    if (dia > 6000) break;
   }
 
   return plan;
 }
-
 // Render del plan
 function renderPlan() {
   planEl.innerHTML = "";
   const plan = generarPlanLectura();
+  window.__plan = generarPlanLectura();
 
   plan.forEach((d) => {
     const div = document.createElement("div");

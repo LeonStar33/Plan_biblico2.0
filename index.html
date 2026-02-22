@@ -13,19 +13,11 @@
       <p>Proverbios ⇄ Salmos → Génesis (1 vez) → Nuevo Testamento hasta Apocalipsis</p>
  
       <div class="acciones">
-          <button id="btn-login">Iniciar sesión con Google</button>
+          <button id="btn-login"><p id="user-email"></p></button>
           <button id="btn-logout" class="oculto">Cerrar sesión</button>
-          <p id="user-email"></p>
-          
+
         <button onclick="irUltimoDia()">➡ Ir a mi día actual</button>
-        <button onclick="exportarProgreso()">💾 Exportar</button>
-        <label class="importar">
-          📂 Importar
-          <input type="file" accept=".json" onchange="importarProgreso(event)" />
-        </label>        
-
         
-
       </div>
     </header>
 
@@ -49,6 +41,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
