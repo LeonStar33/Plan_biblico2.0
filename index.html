@@ -6,18 +6,19 @@
   <title>Plan de Lectura</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div id="plan">
     <header>
       <h1>📖 Plan de Lectura</h1>
       <p>Proverbios ⇄ Salmos → Génesis (1 vez) → Nuevo Testamento hasta Apocalipsis</p>
- 
+
       <div class="acciones">
-          <button id="btn-login"><p id="user-email"></p></button>
-          <button id="btn-logout" class="oculto">Cerrar sesión</button>
+        <button id="btn-login"><p id="user-email"></p></button>
+        <button id="btn-logout" class="oculto">Cerrar sesión</button>
 
         <button onclick="irUltimoDia()">➡ Ir a mi día actual</button>
-        
+        <button class="ajustes-btn" id="btn-ajustes" type="button">⚙️ Ajustes</button>
       </div>
     </header>
 
@@ -26,21 +27,66 @@
     </main>
   </div>
 
+  <!-- LECTOR -->
   <div id="lector" class="oculto">
-             
-
     <div class="topbar">
       <button class="volver-btn" id="btn-volver" onclick="cerrarVerso()">⬅ Volver al plan de lectura</button>
       <h2 id="titulo-verso"></h2>
     </div>
     <div id="texto-verso"></div>
   </div>
-  
+
+  <!-- MODAL AJUSTES -->
+  <div id="modal-ajustes" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>⚙️ Ajustes de lectura</h3>
+        <button id="btn-cerrar-ajustes" class="x-btn" type="button">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="campo">
+          <label for="color-picker">Color principal</label>
+          <input type="color" id="color-picker" value="#ccff00" />
+        </div>
+
+        <div class="campo">
+          <label for="slider-font">Tamaño de letra: <span id="font-val">18</span>px</label>
+          <input id="slider-font" type="range" min="12" max="28" step="1" />
+        </div>
+
+        <div class="campo">
+          <label for="select-tema">Fondo</label>
+          <select id="select-tema">
+            <option value="negro">Negro</option>
+            <option value="oscuro">Oscuro</option>
+            <option value="gris">Gris</option>
+          </select>
+        </div>
+
+        <div class="preview">
+          <div class="preview-title">Vista previa</div>
+          <div id="preview-box" class="preview-box">
+            <p><b>1</b>. El verdadero conocimiento comienza con la honra al Señor…</p>
+            <p><b>2</b>. Estos proverbios son para alcanzar sabiduría e instrucción…</p>
+          </div>
+        </div>
+
+        <div class="acciones-modal">
+          <button id="btn-reset-ajustes" class="secundario" type="button">Restablecer</button>
+          <button id="btn-guardar-ajustes" class="primario" type="button">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
   <script src="config-firebase.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
+  <!-- App -->
   <script src="app.js" defer></script>
 </body>
 </html>

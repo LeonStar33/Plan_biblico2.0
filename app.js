@@ -397,3 +397,153 @@ document.addEventListener("DOMContentLoaded", () => {
   // se encargará de llamar a cargarProgreso() y renderPlan()
   // automáticamente cuando sepa si el usuario está logueado o no.
 });
+
+
+// ===== AJUSTES DE LECTURA (modal + localStorage) =====
+const DEFAULTS = { fontSize: 18, tema: "oscuro", color: "#ccff00" };
+
+function leerAjustes() {
+  try {
+    return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem("ajustesLectura")) || {}) };
+  } catch {
+    return { ...DEFAULTS };
+  }
+}
+
+function guardarAjustes(obj) {
+  localStorage.setItem("ajustesLectura", JSON.stringify(obj));
+}
+
+function aplicarAjustes() {
+  const a = leerAjustes();
+
+  // tamaño solo en el lector
+  if (textoVerso) textoVerso.style.fontSize = a.fontSize + "px";
+
+  // tema
+  document.body.classList.remove("tema-negro", "tema-oscuro", "tema-gris");
+  document.body.classList.add("tema-" + a.tema);
+
+  // color principal global
+  document.documentElement.style.setProperty("--color-principal", a.color);
+}
+
+function abrirAjustes() {
+  const modal = document.getElementById("modal-ajustes");
+  const slider = document.getElementById("slider-font");
+  const fontVal = document.getElementById("font-val");
+  const selectTema = document.getElementById("select-tema");
+  const preview = document.getElementById("preview-box");
+  const colorPicker = document.getElementById("color-picker");
+
+  if (!modal || !slider || !fontVal || !selectTema || !preview || !colorPicker) {
+    console.error("❌ Faltan elementos del modal (IDs). Revisa index.html");
+    return;
+  }
+
+  const a = leerAjustes();
+
+  slider.value = a.fontSize;
+  fontVal.textContent = a.fontSize;
+  selectTema.value = a.tema;
+  colorPicker.value = a.color;
+
+  // preview inicial
+  preview.style.fontSize = a.fontSize + "px";
+  preview.classList.remove("tema-negro", "tema-oscuro", "tema-gris");
+  preview.classList.add("tema-" + a.tema);
+  preview.style.setProperty("--color-principal", a.color);
+
+  modal.classList.remove("oculto");
+}
+
+function cerrarAjustes() {
+  const modal = document.getElementById("modal-ajustes");
+  if (modal) modal.classList.add("oculto");
+}
+
+function hookAjustes() {
+  const btnAjustes = document.getElementById("btn-ajustes");
+  const btnCerrar = document.getElementById("btn-cerrar-ajustes");
+  const btnGuardar = document.getElementById("btn-guardar-ajustes");
+  const btnReset = document.getElementById("btn-reset-ajustes");
+  const slider = document.getElementById("slider-font");
+  const fontVal = document.getElementById("font-val");
+  const selectTema = document.getElementById("select-tema");
+  const preview = document.getElementById("preview-box");
+  const colorPicker = document.getElementById("color-picker");
+  const modal = document.getElementById("modal-ajustes");
+
+  // Si no existe el botón, no hacemos nada
+  if (!btnAjustes) return;
+
+  // Evita duplicar listeners si renderPlan se llama varias veces
+  if (btnAjustes.dataset.hooked === "1") return;
+  btnAjustes.dataset.hooked = "1";
+
+  btnAjustes.addEventListener("click", abrirAjustes);
+
+  if (btnCerrar) btnCerrar.addEventListener("click", cerrarAjustes);
+
+  // cerrar tocando fuera
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) cerrarAjustes();
+    });
+  }
+
+  // preview en vivo (si existen)
+  if (slider && fontVal && preview) {
+    slider.addEventListener("input", () => {
+      const v = parseInt(slider.value, 10);
+      fontVal.textContent = v;
+      preview.style.fontSize = v + "px";
+    });
+  }
+
+  if (selectTema && preview) {
+    selectTema.addEventListener("change", () => {
+      preview.classList.remove("tema-negro", "tema-oscuro", "tema-gris");
+      preview.classList.add("tema-" + selectTema.value);
+    });
+  }
+
+  if (colorPicker && preview) {
+    colorPicker.addEventListener("input", () => {
+      preview.style.setProperty("--color-principal", colorPicker.value);
+    });
+  }
+
+  if (btnReset && slider && fontVal && selectTema && preview && colorPicker) {
+    btnReset.addEventListener("click", () => {
+      slider.value = DEFAULTS.fontSize;
+      fontVal.textContent = DEFAULTS.fontSize;
+      selectTema.value = DEFAULTS.tema;
+      colorPicker.value = DEFAULTS.color;
+
+      preview.style.fontSize = DEFAULTS.fontSize + "px";
+      preview.classList.remove("tema-negro", "tema-oscuro", "tema-gris");
+      preview.classList.add("tema-" + DEFAULTS.tema);
+      preview.style.setProperty("--color-principal", DEFAULTS.color);
+    });
+  }
+
+  if (btnGuardar && slider && selectTema && colorPicker) {
+    btnGuardar.addEventListener("click", () => {
+      const a = {
+        fontSize: parseInt(slider.value, 10),
+        tema: selectTema.value,
+        color: colorPicker.value
+      };
+      guardarAjustes(a);
+      aplicarAjustes();
+      cerrarAjustes();
+    });
+  }
+}
+
+// Aplicar ajustes al cargar
+document.addEventListener("DOMContentLoaded", () => {
+  aplicarAjustes();
+  hookAjustes();
+});
