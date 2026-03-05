@@ -6,7 +6,65 @@ const API_BASE = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/${VERSION}/
 // let progreso = JSON.parse(localStorage.getItem("progreso") || "{}");
 
 // app.js (al inicio)
+// ===== FECHA INICIO DEL PLAN (Firestore por usuario) =====
+let startDateStr = null; // "YYYY-MM-DD"
 
+function hoyYYYYMMDD() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function parseDateYYYYMMDD(s) {
+  if (!s) return null;
+  const d = new Date(s + "T00:00:00");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function dateForDay(startDate, dayNumber) {
+  const d = new Date(startDate);
+  d.setDate(d.getDate() + (dayNumber - 1));
+  return d;
+}
+
+function formatFechaMX(dateObj) {
+  return dateObj.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+async function cargarStartDate(userId) {
+  try {
+    const doc = await db.collection("progresoUsuarios").doc(userId).get();
+    if (doc.exists && doc.data().startDate) {
+      startDateStr = doc.data().startDate; // YYYY-MM-DD
+    } else {
+      startDateStr = null;
+    }
+  } catch (e) {
+    console.error("Error cargando startDate:", e);
+    startDateStr = null;
+  }
+}
+
+async function guardarStartDate(userId, dateStr) {
+  await db.collection("progresoUsuarios").doc(userId).set(
+    { startDate: dateStr },
+    { merge: true }
+  );
+  startDateStr = dateStr;
+}
+
+async function asegurarStartDate(userId) {
+  await cargarStartDate(userId);
+  if (!startDateStr) {
+    await guardarStartDate(userId, hoyYYYYMMDD());
+  }
+}
 
 
 // Inicializar Firebase (¡ESTA ES LA ÚNICA VEZ QUE DEBE APARECER!)
@@ -108,6 +166,8 @@ auth.onAuthStateChanged(async (user) => {
     
     // Cargar el progreso de ESTE usuario
     await cargarProgreso(user.uid);
+    await asegurarStartDate(user.uid);
+    renderPlan(); // para que ya pinte las fechas
     planRoot.classList.remove("oculto"); // Muestra el plan
 
   } else {
@@ -254,13 +314,19 @@ function generarPlanLectura() {
 function renderPlan() {
   planEl.innerHTML = "";
   const plan = generarPlanLectura();
+  const startDate = parseDateYYYYMMDD(startDateStr);
   window.__plan = generarPlanLectura();
 
   plan.forEach((d) => {
     const div = document.createElement("div");
     div.className = "dia";
     div.id = `dia-${d.dia}`;
-    div.innerHTML = `<h3>Día ${d.dia}</h3>`;
+    let fechaTxt = "";
+    if (startDate) {
+      const fecha = dateForDay(startDate, d.dia);
+      fechaTxt = ` <span class="small">(${formatFechaMX(fecha)})</span>`;
+    }
+    div.innerHTML = `<h3>Día ${d.dia}${fechaTxt}</h3>`;
 
     d.lecturas.forEach((l) => {
       const key = `Dia${d.dia}_${l.libro}_${l.cap}`;
@@ -386,11 +452,43 @@ function irUltimoDia() {
   }
 }
 
+function irDiaDeHoy() {
+  const startDate = parseDateYYYYMMDD(startDateStr);
+  if (!startDate) {
+    alert("Aún no se ha definido fecha de inicio.");
+    return;
+  }
+
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const inicio = new Date(startDate);
+  inicio.setHours(0,0,0,0);
+
+  const diffMs = hoy - inicio;
+  const diaActual = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+
+  if (diaActual < 1) {
+    alert("Tu fecha de inicio está en el futuro.");
+    return;
+  }
+
+  const el = document.getElementById(`dia-${diaActual}`);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+    el.classList.add("destacado");
+    setTimeout(() => el.classList.remove("destacado"), 1500);
+  } else {
+    alert("Ya pasaste el rango del plan.");
+  }
+}
+
 // Conectar botones de login/logout y cargar el plan
 document.addEventListener("DOMContentLoaded", () => {
   // Conecta los botones a las funciones que creaste
   document.getElementById("btn-login").addEventListener("click", loginConGoogle);
   document.getElementById("btn-logout").addEventListener("click", logout);
+  const btnIrHoy = document.getElementById("btn-ir-hoy");
+  if (btnIrHoy) btnIrHoy.addEventListener("click", irDiaDeHoy);
   
   // Ya NO llamamos a renderPlan() aquí.
   // El "observador" onAuthStateChanged que añadiste
@@ -429,6 +527,7 @@ function aplicarAjustes() {
 }
 
 function abrirAjustes() {
+  const startDateInput = document.getElementById("start-date");
   const modal = document.getElementById("modal-ajustes");
   const slider = document.getElementById("slider-font");
   const fontVal = document.getElementById("font-val");
@@ -442,6 +541,7 @@ function abrirAjustes() {
   }
 
   const a = leerAjustes();
+  if (startDateInput) startDateInput.value = startDateStr || "";
 
   slider.value = a.fontSize;
   fontVal.textContent = a.fontSize;
@@ -463,6 +563,7 @@ function cerrarAjustes() {
 }
 
 function hookAjustes() {
+
   const btnAjustes = document.getElementById("btn-ajustes");
   const btnCerrar = document.getElementById("btn-cerrar-ajustes");
   const btnGuardar = document.getElementById("btn-guardar-ajustes");
@@ -529,14 +630,33 @@ function hookAjustes() {
   }
 
   if (btnGuardar && slider && selectTema && colorPicker) {
-    btnGuardar.addEventListener("click", () => {
+      btnGuardar.addEventListener("click", async () => {
+
+      // Guardar ajustes visuales
       const a = {
-        fontSize: parseInt(slider.value, 10),
+        fontSize: parseInt(slider.value,10),
         tema: selectTema.value,
         color: colorPicker.value
       };
+
       guardarAjustes(a);
       aplicarAjustes();
+
+      // 🔹 Guardar fecha de inicio del plan
+      const startDateInput = document.getElementById("start-date");
+
+      if (startDateInput && startDateInput.value) {
+        if (!currentUser) {
+          alert("Inicia sesión para guardar tu fecha de inicio.");
+          return;
+        }
+
+        await guardarStartDate(currentUser.uid, startDateInput.value);
+      }
+
+      // 🔹 Volver a renderizar el plan con las nuevas fechas
+      renderPlan();
+
       cerrarAjustes();
     });
   }
